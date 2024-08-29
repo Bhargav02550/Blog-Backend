@@ -17,10 +17,18 @@ const uploadpost = async (req, res) => {
 const getpost = async (req, res) => {
   try {
     let posts = await Post.find();
-    posts = posts.map((post) => ({
-      ...post._doc,
-      content: post.content.substring(0, 100),
-    }));
+    posts = posts.map((post) => {
+      const maxLength = 100;
+      let content = post.content.substring(0, maxLength);
+      if (post.content.length > maxLength) {
+        content = content.substring(0, content.lastIndexOf(" ")) + "...";
+      }
+
+      return {
+        ...post._doc,
+        content,
+      };
+    });
     res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ message: "Error getting post" });
