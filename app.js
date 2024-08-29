@@ -6,9 +6,25 @@ var logger = require("morgan");
 const mongoose = require("mongoose");
 const { faker } = require("@faker-js/faker");
 const Post = require("./models/post");
+const User = require("./models/users");
 const cors = require("cors");
 const env = require("dotenv");
+const http = require("http");
+const socketIO = require("socket.io");
+
 var app = express();
+
+app.use(cors());
+
+const server = http.createServer(app);
+
+const io = socketIO(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -26,9 +42,8 @@ env.config({ path: "./.env" });
 //     credentials:true,            //access-control-allow-credentials:true
 //     optionSuccessStatus:200
 // }
-app.use(cors());
 
-app.use("/", require("./routes/Postroutes"));
+app.use("/api", require("./routes/Postroutes"));
 
 // POST route to generate fake data using faker
 app.post("/generate-fake-data", async (req, res) => {
@@ -39,6 +54,7 @@ app.post("/generate-fake-data", async (req, res) => {
         title: faker.lorem.sentence(),
         content: faker.lorem.paragraphs(),
         author: faker.person.fullName(),
+        image: faker.image.urlPicsumPhotos(),
         created_date: faker.date.past(),
         comments: {
           [faker.string.uuid()]: faker.lorem.sentence(),
@@ -82,7 +98,14 @@ mongoose
     console.log(err);
   });
 
-app.listen(process.env.PORT || 8000, (req, res) => {
+// io.on("connection", (socket) => {
+//   console.log("A user connected");
+//   socket.on("disconnect", () => {
+//     console.log("User disconnected");
+//   });
+// });
+
+server.listen(process.env.PORT || 8000, (req, res) => {
   console.log(`Server running on Port:${process.env.PORT || 8000}`);
 });
 

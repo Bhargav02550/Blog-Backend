@@ -5,9 +5,11 @@ const Router = express.Router();
 
 const Postcontroller = require("../controllers/Postcontrollers");
 
-Router.post("/upload_post",Postcontroller.uploadpost);
+Router.post("/upload_post", Postcontroller.uploadpost);
 // Router.post("/post_fake_data",Postcontroller.fakedata);
-Router.get("/get_posts",Postcontroller.getpost);
-Router.post("/register",Postcontroller.register);
+Router.get("/get_posts", Postcontroller.getpost);
+Router.post("/user_register", Postcontroller.register);
+Router.post("/user_login", Postcontroller.login);
+Router.post("/logout", Postcontroller.logout);
 
 module.exports = Router;

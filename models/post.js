@@ -6,6 +6,10 @@ const postSchema = new schema({
     type: String,
     required: true,
   },
+  image:{
+    type:String,
+    required:true,
+  },
   content: {
     type: String,
     required: true,
@@ -26,10 +30,10 @@ const postSchema = new schema({
     type: Object,
     default: {},
   },
-  likes:{
+  likes: {
     type: Number,
     default: 0,
-  }
+  },
 });
 
 module.exports = mongoose.model("Post", postSchema);

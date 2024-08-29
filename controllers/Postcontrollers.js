@@ -1,5 +1,6 @@
 const { get } = require("mongoose");
 const Post = require("../models/post");
+const User = require("../models/users");
 const bcrypt = require("bcrypt");
 
 const uploadpost = async (req, res) => {
@@ -17,6 +18,7 @@ const getpost = async (req, res) => {
   try {
     const post = await Post.find();
     res.status(200).json(post);
+    // io.emit("newPost", newPost);
   } catch (error) {
     res.status(500).json({ message: "Error getting post" });
   }
@@ -34,17 +36,63 @@ const register = async (req, res) => {
     const saveduser = await user.save();
     res.status(201).json(saveduser);
   } catch (error) {
-    res.status(500).json({ message: "User already registered" });
+    res.status(500).json({ message: "Error Registering User" });
   }
 };
 
-const login = async (req,res) => {
-  const {email , password} = req.body;
-  
-}
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  const current_user = await User.findOne({ email: email });
+
+  const isCorrectPassword = await bcrypt.compare(
+    password,
+    current_user.password
+  );
+
+  if (
+    current_user &&
+    (isCorrectPassword || isCorrectPassword === true) &&
+    current_user.isLoggedIn === false
+  ) {
+    const access_token = current_user._id;
+    res.status(201).json({ access_token, message: "Login Success" });
+    current_user.isLoggedIn = true;
+    await current_user.save();
+  } else if (current_user && current_user.isLoggedIn === true) {
+    res.status(401).json({ message: "User already logged in" });
+  } else if (
+    (await bcrypt.compare(password, current_user.password)) === false
+  ) {
+    res.status(401).json({ message: "Wrong password" });
+  }
+};
+
+const logout = async (req, res) => {
+  const { access_token } = req.body;
+  console.log(access_token);
+
+  try {
+    const present_user = await User.findOne({ _id: access_token });
+    if (!present_user) {
+      res.status(401).json({ message: "Wrong user" });
+    } else {
+      present_user.isLoggedIn = false;
+      await present_user.save();
+      res.status(200).json({
+        message: "Successfully logged out",
+        access_token,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error Logging out user" });
+  }
+};
 
 module.exports = {
   uploadpost,
   getpost,
   register,
+  login,
+  logout,
 };

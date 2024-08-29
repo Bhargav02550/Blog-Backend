@@ -11,6 +11,11 @@ const userSchema = new schema({
     type: String,
     required: true,
   },
+  isLoggedIn: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);
